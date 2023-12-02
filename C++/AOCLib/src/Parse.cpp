@@ -32,10 +32,10 @@ int AOC::ExtractInt(const string & str, const string & regexStr)
 {
   smatch match;
   regex_match(str, match, regex(regexStr));
-  assert(match.size() == 1);
+  assert(match.size() == 2);
 
   // 0
-  return stoi(match[0]);
+  return stoi(match[1]);
 }
 
 vector<string> AOC::ExtractMatches(const string & str, const string & regexStr)
