@@ -39,20 +39,80 @@ struct MapEntry
   long long destinationStart{};
   long long sourceStart{};
   long long lenght{};
+
+  bool operator<(const MapEntry aOther) { return this->sourceStart < aOther.sourceStart; }
 };
 
-pair<long long, long long> Convert(vector<MapEntry> & aMap, long long from)
+long long Convert(vector<MapEntry> & aMap, long long from)
 {
-  for (auto entry : aMap)
+  for (auto & entry : aMap)
   {
     if (entry.sourceStart <= from && from <= entry.sourceStart + entry.lenght)
     {
       auto diff = from - entry.sourceStart;
-      return make_pair(entry.destinationStart + diff, entry.sourceStart + entry.lenght - from);
+      return entry.destinationStart + diff;
     }
   }
 
-  return make_pair(from, 0);
+  return from;
+}
+
+vector<pair<long long, long long>> ConvertRange(vector<MapEntry> &         aMap,
+                                                pair<long long, long long> range)
+{
+  long long from   = range.first;
+  long long lenght = range.second;
+
+  vector<pair<long long, long long>> newRanges;
+
+  // inside range
+  for (auto & entry : aMap)
+  {
+    if (entry.sourceStart <= from && from < entry.sourceStart + entry.lenght)
+    {
+      auto diff        = from - entry.sourceStart;
+      auto destination = entry.destinationStart + diff;
+
+      // full inside
+      if (destination + lenght < entry.destinationStart + entry.lenght)
+      {
+        newRanges.push_back({ destination, lenght });
+      }
+      // starting inside range but overflow
+      else
+      {
+        long long lenghtDiff = (entry.destinationStart + entry.lenght) - destination;
+        newRanges.push_back({ destination, lenghtDiff });
+
+        assert(lenght - lenghtDiff >= 0);
+
+        auto childRanges = ConvertRange(aMap, { from + lenghtDiff, lenght - lenghtDiff });
+        copy(begin(childRanges), end(childRanges), back_inserter(newRanges));
+      }
+
+      return newRanges;
+    }
+  }
+
+  for (auto & entry : aMap)
+  {
+    // starting outside
+    if (from < entry.sourceStart && entry.sourceStart < from + lenght)
+    {
+      long long lenghtDiff = entry.sourceStart - from;
+      newRanges.push_back({ from, lenghtDiff });
+
+      assert(lenght - lenghtDiff >= 0);
+
+      auto childRanges = ConvertRange(aMap, { from + lenghtDiff, lenght - lenghtDiff });
+      copy(begin(childRanges), end(childRanges), back_inserter(newRanges));
+
+      return newRanges;
+    }
+  }
+
+  newRanges.push_back({ from, lenght });
+  return newRanges;
 }
 
 int main()
@@ -73,10 +133,10 @@ int main()
   while (ss >> n)
     seeds.push_back(n);
 
-  vector<pair<long long, long long>> seedsRange;
+  vector<pair<long long, long long>> seedsRanges;
   for (int i = 0; i < seeds.size(); i += 2)
   {
-    seedsRange.push_back({ seeds[i], seeds[i + 1] });
+    seedsRanges.push_back({ seeds[i], seeds[i + 1] });
   }
 
   //
@@ -87,6 +147,14 @@ int main()
   vector<MapEntry> lightToTemperature;
   vector<MapEntry> temperatureToHumidity;
   vector<MapEntry> humidityToLocation;
+
+  sort(begin(seedToSoil), end(seedToSoil));
+  sort(begin(soilToFertilizer), end(soilToFertilizer));
+  sort(begin(fertilizerToWater), end(fertilizerToWater));
+  sort(begin(waterToLight), end(waterToLight));
+  sort(begin(lightToTemperature), end(lightToTemperature));
+  sort(begin(temperatureToHumidity), end(temperatureToHumidity));
+  sort(begin(humidityToLocation), end(humidityToLocation));
 
   string lastMap = "";
   for (int i = 1; i < v.size(); i++)
@@ -122,55 +190,62 @@ int main()
       humidityToLocation.push_back(entry);
   }
 
+  // part 1
   auto runAllConversions = [&](long long initialSeed) -> long long
   {
-    long long minRemaining{};
-    long long seed{}, remaining{};
-
-    tie(seed, remaining) = Convert(seedToSoil, initialSeed);
-    minRemaining         = min(minRemaining, remaining);
-
-    tie(seed, remaining) = Convert(soilToFertilizer, seed);
-    minRemaining         = min(minRemaining, remaining);
-
-    tie(seed, remaining) = Convert(fertilizerToWater, seed);
-    minRemaining         = min(minRemaining, remaining);
-
-    tie(seed, remaining) = Convert(waterToLight, seed);
-    minRemaining         = min(minRemaining, remaining);
-
-    tie(seed, remaining) = Convert(lightToTemperature, seed);
-    minRemaining         = min(minRemaining, remaining);
-
-    tie(seed, remaining) = Convert(temperatureToHumidity, seed);
-    minRemaining         = min(minRemaining, remaining);
-
-    tie(seed, remaining) = Convert(humidityToLocation, seed);
-    minRemaining         = min(minRemaining, remaining);
+    auto seed = Convert(seedToSoil, initialSeed);
+    seed      = Convert(soilToFertilizer, seed);
+    seed      = Convert(fertilizerToWater, seed);
+    seed      = Convert(waterToLight, seed);
+    seed      = Convert(lightToTemperature, seed);
+    seed      = Convert(temperatureToHumidity, seed);
+    seed      = Convert(humidityToLocation, seed);
 
     return seed;
   };
 
-  // part 1
-  // long long minSeed = numeric_limits<long long>::max();
-  // for (auto seed : seeds)
-  //{
-  //   seed    = runAllConversions(seed);
-  //   minSeed = min(minSeed, seed);
-  // }
+  long long minSeed = numeric_limits<long long>::max();
+  for (auto seed : seeds)
+  {
+    seed    = runAllConversions(seed);
+    minSeed = min(minSeed, seed);
+  }
 
-  // cout << minSeed << endl;
+  cout << minSeed << endl;
+
+  // part 2
+  auto runOneRangeConversion =
+    [&](vector<MapEntry> & map, vector<pair<long long, long long>> & initialRanges)
+  {
+    vector<pair<long long, long long>> ranges;
+
+    for (auto & seedRange : initialRanges)
+    {
+      auto resultRanges = ConvertRange(map, seedRange);
+      copy(resultRanges.begin(), resultRanges.end(), back_inserter(ranges));
+    }
+
+    return ranges;
+  };
+
+  auto runAllRangeConversions = [&](vector<pair<long long, long long>> initialRanges)
+  {
+    auto seed = runOneRangeConversion(seedToSoil, initialRanges);
+    seed      = runOneRangeConversion(soilToFertilizer, seed);
+    seed      = runOneRangeConversion(fertilizerToWater, seed);
+    seed      = runOneRangeConversion(waterToLight, seed);
+    seed      = runOneRangeConversion(lightToTemperature, seed);
+    seed      = runOneRangeConversion(temperatureToHumidity, seed);
+    seed      = runOneRangeConversion(humidityToLocation, seed);
+
+    return seed;
+  };
 
   long long minSeed2 = numeric_limits<long long>::max();
-  for (auto [seedStart, seedLength] : seedsRange)
-  {
-    for (long long seed = seedStart; seed < seedStart + seedLength; seed++)
-    {
-      auto result = runAllConversions(seed);
 
-      minSeed2 = min(minSeed2, result);
-    }
-  }
+  auto ranges = runAllRangeConversions(seedsRanges);
+  for (auto range : ranges)
+    minSeed2 = min(minSeed2, range.first);
 
   cout << minSeed2 << endl;
 
