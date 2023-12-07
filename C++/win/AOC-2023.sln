@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day05", "..\Day05\win\day05
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day06", "..\Day06\win\day06.vcxproj", "{B54B16A5-2E58-4E13-9E0F-0E1681292D26}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day07", "..\Day07\win\day07.vcxproj", "{B54B16A5-2E58-4E13-9E0F-0E1681292D26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
