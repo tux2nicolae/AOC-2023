@@ -34,19 +34,16 @@ using namespace std;
 #include "../../AOCLib/src/Time.h"
 #include "../../AOCLib/src/Util.h"
 
+bool part2 = false;
+
 unordered_map<char, char> CardPoints{ { 'A', 14 }, { 'K', 13 }, { 'Q', 12 }, { 'J', 11 },
                                       { 'T', 10 }, { '9', 9 },  { '8', 8 },  { '7', 7 },
                                       { '6', 6 },  { '5', 5 },  { '4', 4 },  { '3', 3 },
                                       { '2', 2 } };
 
-unordered_map<char, char> PointsCard{ { 14, 'A' }, { 13, 'K' }, { 12, 'Q' }, { 11, 'J' },
-                                      { 10, 'T' }, { 9, '9' },  { 8, '8' },  { 7, '7' },
-                                      { 6, '6' },  { 5, '5' },  { 4, '4' },  { 3, '3' },
-                                      { 2, '2' } };
-
 std::vector<int> GetFrequency(string str)
 {
-  std::vector<int> frequency(255, 0);
+  std::vector<int> frequency(15, 0);
 
   for (auto c : str)
     frequency[c]++;
@@ -54,19 +51,15 @@ std::vector<int> GetFrequency(string str)
   return frequency;
 }
 
-bool IsFullHouese(string str)
+bool IsFullHouese(vector<int> frequency)
 {
-  auto frequency = GetFrequency(str);
   sort(frequency.begin(), frequency.end(), greater<int>());
-
   return (frequency[0] == 3 && frequency[1] == 2);
 }
 
-bool IsTwoPairs(string str)
+bool IsTwoPairs(vector<int> frequency)
 {
-  auto frequency = GetFrequency(str);
   sort(frequency.begin(), frequency.end(), greater<int>());
-
   return frequency[0] == 2 && frequency[1] == 2;
 }
 
@@ -77,50 +70,48 @@ struct Hand
 
   bool operator<(Hand & aOther)
   {
-    if (hand == aOther.hand)
-    {
-      assert(false);
-      return false;
-    }
-
     auto frequency      = GetFrequency(hand);
     auto otherFrequency = GetFrequency(aOther.hand);
 
-    auto left  = *max_element(begin(frequency), end(frequency));
-    auto right = *max_element(begin(otherFrequency), end(otherFrequency));
+    // part 2
+    auto jokerfrequency      = frequency[CardPoints['J']];
+    auto otherJokerFrequency = otherFrequency[CardPoints['J']];
 
-    assert(left);
-    assert(right);
+    if (part2)
+    {
+      frequency[CardPoints['J']] -= jokerfrequency;
+      otherFrequency[CardPoints['J']] -= otherJokerFrequency;
+    }
+
+    auto & left  = *max_element(begin(frequency), end(frequency));
+    auto & right = *max_element(begin(otherFrequency), end(otherFrequency));
+
+    // part 2
+    if (part2)
+    {
+      left += jokerfrequency;
+      right += otherJokerFrequency;
+    }
 
     // Full house
-    if (IsFullHouese(hand) && IsFullHouese(aOther.hand))
-    {
+    if (IsFullHouese(frequency) && IsFullHouese(otherFrequency))
       return hand < aOther.hand;
-    }
-    else if (IsFullHouese(hand) && right < 4)
-    {
+    else if (IsFullHouese(frequency) && right < 4)
       return false;
-    }
-    else if (IsFullHouese(aOther.hand) && left < 4)
-    {
+    else if (IsFullHouese(otherFrequency) && left < 4)
       return true;
-    }
 
     // X of a kind
     if (left < right)
-    {
       return true;
-    }
     else if (left > right)
-    {
       return false;
-    }
     else if (left == right)
     {
       // Two pairs
-      if (!IsTwoPairs(hand) && IsTwoPairs(aOther.hand))
+      if (!IsTwoPairs(frequency) && IsTwoPairs(otherFrequency))
         return true;
-      else if (IsTwoPairs(hand) && !IsTwoPairs(aOther.hand))
+      else if (IsTwoPairs(frequency) && !IsTwoPairs(otherFrequency))
         return false;
 
       return hand < aOther.hand;
@@ -141,6 +132,7 @@ int main()
 
   vector<Hand> hands;
 
+  // part 1
   for (auto line : v)
   {
     auto matches = AOC::ExtractMatches(line, "(.*) (.*)");
@@ -156,23 +148,38 @@ int main()
 
   sort(hands.begin(), hands.end());
 
-  // transform back
-  for (auto & hand : hands)
-  {
-    for (auto & c : hand.hand)
-      c = PointsCard[c];
-  }
-
-  long long sum = 0;
+  long long sumPart1 = 0;
   for (int i = 0; i < hands.size(); i++)
-  {
-    auto & hand = hands[i];
-    sum += hand.bid * (i + 1ll);
+    sumPart1 += hands[i].bid * (i + 1ll);
 
-    out << hand.hand << endl;
+  cout << sumPart1 << endl;
+
+  // part 2
+  part2 = true;
+
+  hands.clear();
+  CardPoints['J'] = 1;
+
+  for (auto line : v)
+  {
+    auto matches = AOC::ExtractMatches(line, "(.*) (.*)");
+    assert(matches.size() == 2);
+
+    // transform to points
+    string hand = matches[0];
+    for (auto & c : hand)
+      c = CardPoints[c];
+
+    hands.push_back(Hand{ hand, atoi(matches[1].c_str()) });
   }
 
-  cout << sum;
+  sort(hands.begin(), hands.end());
+
+  long long sumPart2 = 0;
+  for (int i = 0; i < hands.size(); i++)
+    sumPart2 += hands[i].bid * (i + 1ll);
+
+  cout << sumPart2;
 
   return 0;
 }
