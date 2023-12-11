@@ -36,59 +36,41 @@ using namespace std;
 
 vector<string> ExpandUniverse(vector<string> universe)
 {
-  vector<string> expandedUniverse;
-
   // expand rows
-  for (auto line : universe)
+  for (auto & line : universe)
   {
-    auto hashes = count_if(line.begin(), line.end(),
+    auto galaxies = count_if(line.begin(), line.end(),
                            [](char c)
                            {
                              return c == '#';
                            });
 
-    if (hashes)
+    if (!galaxies)
     {
-      expandedUniverse.push_back(line);
-    }
-    else
-    {
-      expandedUniverse.push_back(string(line.size(), '$'));
+      line = string(line.size(), '$');
     }
   }
-
-  universe = expandedUniverse;
-  expandedUniverse.clear();
-  expandedUniverse.resize(universe.size(), string());
 
   // expand columns
   for (int j = 0; j < universe[0].size(); j++)
   {
-    //
-    int hashes = 0;
+    int galaxies = 0;
     for (int i = 0; i < universe.size(); i++)
     {
       if (universe[i][j] == '#')
-        hashes++;
+        galaxies++;
     }
 
-    if (hashes)
+    if (!galaxies)
     {
       for (int i = 0; i < universe.size(); i++)
       {
-        expandedUniverse[i] += universe[i][j];
-      }
-    }
-    else
-    {
-      for (int i = 0; i < universe.size(); i++)
-      {
-        expandedUniverse[i] += "$";
+        universe[i][j] = '$';
       }
     }
   }
 
-  return expandedUniverse;
+  return universe;
 }
 
 long long Distance(vector<string> & universe, AOC::Point first, AOC::Point second, int step)
