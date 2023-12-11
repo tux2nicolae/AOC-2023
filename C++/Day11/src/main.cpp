@@ -3,6 +3,7 @@
  * @author : Nicolae Telechi
  */
 #include <algorithm>
+#include <array>
 #include <assert.h>
 #include <deque>
 #include <fstream>
@@ -40,10 +41,10 @@ vector<string> ExpandUniverse(vector<string> universe)
   for (auto & line : universe)
   {
     auto galaxies = count_if(line.begin(), line.end(),
-                           [](char c)
-                           {
-                             return c == '#';
-                           });
+                             [](char c)
+                             {
+                               return c == '#';
+                             });
 
     if (!galaxies)
     {
@@ -118,21 +119,11 @@ int main()
   }
 
   long long part1Sum = 0;
-  for (int i = 0; i < points.size() - 1; i++)
-  {
-    for (int j = i + 1; j < points.size(); j++)
-    {
-      part1Sum += Distance(universe, points[i], points[j], 2);
-    }
-  }
-
   long long part2Sum = 0;
-  for (int i = 0; i < points.size() - 1; i++)
+  for (auto [i, j] : AOC::GenerateIndexCombinations<2>(points.size()))
   {
-    for (int j = i + 1; j < points.size(); j++)
-    {
-      part2Sum += Distance(universe, points[i], points[j], 1000000);
-    }
+    part1Sum += Distance(universe, points[i], points[j], 2);
+    part2Sum += Distance(universe, points[i], points[j], 1000000);
   }
 
   cout << part1Sum << endl << part2Sum << endl;
