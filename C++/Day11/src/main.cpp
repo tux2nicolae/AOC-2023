@@ -91,13 +91,13 @@ vector<string> ExpandUniverse(vector<string> universe)
   return expandedUniverse;
 }
 
-long long Distance(vector<string> & universe, AOC::Point first, AOC::Point second)
+long long Distance(vector<string> & universe, AOC::Point first, AOC::Point second, int step)
 {
   long long sumVertical = 0;
   for (int i = min(first.x, second.x); i < max(first.x, second.x); i++)
   {
     if (universe[i][first.y] == '$')
-      sumVertical += 1000000;
+      sumVertical += step;
     else
       sumVertical++;
   }
@@ -106,7 +106,7 @@ long long Distance(vector<string> & universe, AOC::Point first, AOC::Point secon
   for (int j = min(first.y, second.y); j < max(first.y, second.y); j++)
   {
     if (universe[first.x][j] == '$')
-      sumHorisontal += 1000000;
+      sumHorisontal += step;
     else
       sumHorisontal++;
   }
@@ -135,16 +135,25 @@ int main()
     }
   }
 
-  long long sum = 0;
+  long long part1Sum = 0;
   for (int i = 0; i < points.size() - 1; i++)
   {
     for (int j = i + 1; j < points.size(); j++)
     {
-      sum += Distance(universe, points[i], points[j]);
+      part1Sum += Distance(universe, points[i], points[j], 2);
     }
   }
 
-  cout << sum << endl;
+  long long part2Sum = 0;
+  for (int i = 0; i < points.size() - 1; i++)
+  {
+    for (int j = i + 1; j < points.size(); j++)
+    {
+      part2Sum += Distance(universe, points[i], points[j], 1000000);
+    }
+  }
+
+  cout << part1Sum << endl << part2Sum << endl;
 
   return 0;
 }
