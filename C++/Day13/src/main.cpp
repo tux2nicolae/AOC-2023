@@ -58,11 +58,11 @@ vector<long long> SolveVertical(const vector<string> & pattern)
         break;
     }
 
-  if (allGood)
-    results.push_back(x + 1);
-}
+    if (allGood)
+      results.push_back(x + 1);
+  }
 
-return results;
+  return results;
 }
 
 vector<long long> SolveHorisontal(const vector<string> & pattern)
