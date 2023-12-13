@@ -43,9 +43,9 @@ vector<long long> SolveVertical(const vector<string> & pattern)
   for (int x = 0; x < pattern[0].size() - 1; x++)
   {
     bool allGood = true;
-    for (int i = 0; i < pattern.size(); i++)
+    for (int a = x, b = x + 1; a >= 0 && b < pattern[0].size(); a--, b++)
     {
-      for (int a = x, b = x + 1; a >= 0 && b < pattern[0].size(); a--, b++)
+      for (int i = 0; i < pattern.size(); i++)
       {
         if (pattern[i][a] != pattern[i][b])
         {
@@ -58,13 +58,11 @@ vector<long long> SolveVertical(const vector<string> & pattern)
         break;
     }
 
-    if (allGood)
-    {
-      results.push_back(x + 1);
-    }
-  }
+  if (allGood)
+    results.push_back(x + 1);
+}
 
-  return results;
+return results;
 }
 
 vector<long long> SolveHorisontal(const vector<string> & pattern)
@@ -75,25 +73,17 @@ vector<long long> SolveHorisontal(const vector<string> & pattern)
   for (int x = 0; x < pattern.size() - 1; x++)
   {
     bool allGood = true;
-    for (int j = 0; j < pattern[0].size(); j++)
+    for (int a = x, b = x + 1; a >= 0 && b < pattern.size(); a--, b++)
     {
-      for (int a = x, b = x + 1; a >= 0 && b < pattern.size(); a--, b++)
+      if (pattern[a] != pattern[b])
       {
-        if (pattern[a][j] != pattern[b][j])
-        {
-          allGood = false;
-          break;
-        }
-      }
-
-      if (!allGood)
+        allGood = false;
         break;
+      }
     }
 
     if (allGood)
-    {
       results.push_back(x + 1);
-    }
   }
 
   return results;
