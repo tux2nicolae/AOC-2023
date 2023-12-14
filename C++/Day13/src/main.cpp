@@ -134,12 +134,18 @@ int main()
     return next[0];
   };
 
+  long long sumVerticalPart1   = 0;
+  long long sumHorisontalPart1 = 0;
+
   long long sumVertical   = 0;
   long long sumHorisontal = 0;
   for (const auto & pattern : patterns)
   {
     vector<long long> verticals   = SolveVertical(pattern);
     vector<long long> horisontals = SolveHorisontal(pattern);
+
+    long long vertical   = verticals.size() ? verticals[0] : 0;
+    long long horisontal = horisontals.size() ? horisontals[0] : 0;
 
     // part 2
     long long nextVertical   = 0;
@@ -184,15 +190,16 @@ int main()
     assert(nextVertical == 0 || nextHorisontal == 0);
 
     // part 1
-    // sumVertical += vertical;
-    // sumHorisontal += horisontal;
+    sumVerticalPart1 += vertical;
+    sumHorisontalPart1 += horisontal;
 
     // part 2
     sumVertical += nextVertical;
     sumHorisontal += nextHorisontal;
   }
 
-  std::cout << sumVertical + 100 * sumHorisontal;
+  std::cout << sumVerticalPart1 + 100 * sumHorisontalPart1 << endl
+            << sumVertical + 100 * sumHorisontal;
 
   return 0;
 }
