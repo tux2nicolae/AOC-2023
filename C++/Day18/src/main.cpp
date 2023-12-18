@@ -44,5 +44,62 @@ int main()
   FStreamReader reader(in);
   auto          lines = reader.ReadLines();
 
+  map<AOC::Point, string> map;
+
+  std::map<long long, long long> maxX;
+
+  AOC::Point current{ 0, 0 };
+
+  for (auto line : lines)
+  {
+    auto matches = AOC::ExtractMatches(line, "(.*) (.*) \\((.*)\\)");
+    assert(matches.size() == 3);
+
+    int steps = stoi(matches[1]);
+    while (steps--)
+    {
+      current      = current.GetNeighbour(matches[0]);
+      map[current] = "#";  // matches[2];
+
+      maxX[current.y] = std::max(maxX[current.y], current.x);
+    }
+  }
+
+  queue<AOC::Point>          q;
+  std::map<AOC::Point, bool> visited;
+
+  q.push({ -100, -100 });
+
+  while (!q.empty())
+  {
+    auto current = q.front();
+    q.pop();
+
+    for (const auto & neighbour : current.GetDirect2DNeighbours())
+    {
+      if (neighbour.IsInBoundary({ -500, -500 }, { 500, 500 }) && !visited[neighbour] &&
+          map[neighbour] != "#")
+      {
+        visited[neighbour] = true;
+        map[neighbour]     = "*";
+        q.push(neighbour);
+      }
+    }
+  }
+
+  for (int y = -500; y < 500; y++)
+  {
+    for (int x = -500; x < 500; x++)
+    {
+      if (map.count({ x, y }))
+        out << map[{ x, y }];
+      else
+        out << ".";
+    }
+    out << endl;
+  }
+
+  cout << map.size();
+
   return 0;
 }
