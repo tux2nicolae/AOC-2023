@@ -133,7 +133,7 @@ int main()
   v.resize(26600000);
   for (size_t i = 300; i < 26501365; i++)
   {
-    auto x = v[i - 1] - v[i - lines.size() - 1] + v[i - lines.size()] + constants[(i - 2) % lines.size()];
+    auto x = v[i - 1] - v[i - lines.size() - 1] + v[i - lines.size()] + constants[(i - 300) % lines.size()];
     out << x << endl;
 
     if (i < 500)
