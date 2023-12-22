@@ -36,6 +36,8 @@ using namespace std;
 #include "../../AOCLib/src/Time.h"
 #include "../../AOCLib/src/Util.h"
 
+bool part2 = false;
+
 int main()
 {
   ifstream in("..\\src\\_input.in");
@@ -46,7 +48,10 @@ int main()
 
   map<AOC::Point, string> map;
 
-  std::map<long long, long long> maxX;
+  auto maxX = numeric_limits<long long>::min();
+  auto minX = numeric_limits<long long>::max();
+  auto maxY = numeric_limits<long long>::min();
+  auto minY = numeric_limits<long long>::max();
 
   AOC::Point current{ 0, 0 };
 
@@ -55,17 +60,56 @@ int main()
     auto matches = AOC::ExtractMatches(line, "(.*) (.*) \\((.*)\\)");
     assert(matches.size() == 3);
 
-    int steps = stoi(matches[1]);
+    // part 1
+    string directionPart1 = matches[0];
+    auto   stepsPart1     = stoll(matches[1]);
+
+    // part 2;
+    auto   stepsPart2     = std::stoll(matches[2].substr(1, 5), nullptr, 16);
+    string directionPart2 = [&]()
+    {
+      auto direction = std::stoll(matches[2].substr(6, 1), nullptr, 16);
+      switch (direction)
+      {
+      case 0:
+        return "R";
+      case 1:
+        return "D";
+      case 2:
+        return "L";
+      case 3:
+        return "U";
+      }
+
+      assert(false);
+      return "";
+    }();
+
+    auto steps     = stepsPart1;
+    auto direction = directionPart1;
+
+    if (part2)
+    {
+      steps     = stepsPart2;
+      direction = directionPart2;
+    }
+
+    cout << direction << " " << steps << endl;
+
     while (steps--)
     {
-      current      = current.GetNeighbour(matches[0]);
-      map[current] = "#";  // matches[2];
+      current      = current.GetNeighbour(direction);
+      map[current] = "#";
 
-      maxX[current.y] = std::max(maxX[current.y], current.x);
+      maxX = std::max(maxX, current.x);
+      minX = std::min(minX, current.x);
+
+      maxY = std::max(maxY, current.y);
+      minY = std::min(minY, current.y);
     }
   }
 
-  queue<AOC::Point>          q;
+  /*queue<AOC::Point>          q;
   std::map<AOC::Point, bool> visited;
 
   q.push({ -100, -100 });
@@ -85,11 +129,11 @@ int main()
         q.push(neighbour);
       }
     }
-  }
+  }*/
 
-  for (int y = -500; y < 500; y++)
+  for (int y = minY; y <= maxY; y++)
   {
-    for (int x = -500; x < 500; x++)
+    for (int x = minX; x <= maxX; x++)
     {
       if (map.count({ x, y }))
         out << map[{ x, y }];
